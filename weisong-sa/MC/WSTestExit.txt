@@ -1,0 +1,223 @@
+{ 
+Name
+    WSExitTemplate
+
+Description
+    Strategy Template for various exit methods
+
+Types
+     0     No exits
+     1     Number of bars (0-90)
+     2-4   Profit/stoploss based on AtrB (Atr: 0-6, Pf/Sl: 0/1, 1/1, 2/1)
+     5-7   Profit/stoploss based on AtrS (Atr: 0-3, Pf/Sl: 0/1, 1/1, 2/1)
+     8-9   Profit/stoploss based percentage of gain/loss (1-15&, 1/1, 2/1)
+     10-14 At close (same day, profitable, not profitable, high close, up day)
+     15-16 After N bars and last bar's high/low
+     17    After N bars and after below highest low M times     
+     18-19 Above/below EMA
+     20-21 At high/low of last N bars
+     22    At high/low of last N bars, variable length
+
+Author
+    Wei Song (weisong44@hotmail.com)
+
+Version history
+    When       Who          What
+    ===============================================================================================
+    03/22/2017 Wei Song     Inital version, 1-21
+    03/23/2017 Wei Song     Added type 0, 17-22
+
+}
+
+// ===== BEGIN OF STRATEGY ========================================================================
+// TODO
+// ===== END OF STRATEGY ==========================================================================
+
+// ===== BEGIN OF EXITS ===========================================================================
+Input:
+    ExitType(0), // The type of an exit
+    ExitParam(0); // range 1-30
+
+Variable:
+    AtrBarCount(10), // Number of bars used to calculate ATR
+    ProfitToStopRatio(2); // General parameter shared by all exit types
+
+// ==== Internal variables ========================================================================
+Variables:
+    opens0(0), highs0(0), lows0(0), closes0(0),
+    opens1(0), highs1(0), lows1(0), closes1(0),
+    opens2(0), highs2(0), lows2(0), closes2(0),
+    opens3(0), highs3(0), lows3(0), closes3(0),
+    opens4(0), highs4(0), lows4(0), closes4(0),
+    opens5(0), highs5(0), lows5(0), closes5(0),
+    opens6(0), highs6(0), lows6(0), closes6(0);
+
+// Intraday only
+If Bartype = 1 then begin
+    opens0 = OpenS(0); highs0 = HighS(0); lows0 = LowS(0); closes0 = CloseS(0);
+    opens1 = OpenS(1); highs1 = HighS(1); lows1 = LowS(1); closes1 = CloseS(1);
+    opens2 = OpenS(2); highs2 = HighS(2); lows2 = LowS(2); closes2 = CloseS(2);
+    opens3 = OpenS(3); highs3 = HighS(3); lows3 = LowS(3); closes3 = CloseS(3);
+    opens4 = OpenS(4); highs4 = HighS(4); lows4 = LowS(4); closes4 = CloseS(4);
+    opens5 = OpenS(5); highs5 = HighS(5); lows5 = LowS(5); closes5 = CloseS(5);
+    opens6 = OpenS(6); highs6 = HighS(6); lows6 = LowS(6); closes6 = CloseS(6);
+end;
+
+Variable:
+    mp(0),       
+                  // Intraday    Daily
+                  // --------------------
+    atrUnitB(0),  // 0-6 AtrB    0-3 Atr
+    atrUnitS(0),  // 0-3 AtrS    0-3 Atr
+    pctUnit1(0),  // 0-15%       0-15%
+    pctUnit2(0),  // 0-50%       0-50%
+    pctUnit3(0),  // 0-100%      0-100%
+    pctUnit4(0),  // 0-200%      0-200%
+    nBars1(0),    // 0-15        0-15
+    nBars2(0),    // 0-30        0-30
+    nBars3(0),    // 0-60        0-60
+    nBars4(0);    // 0-90        0-90
+
+mp = Marketposition;
+
+If BarType = 1 then begin // Intraday
+    atrUnitB = (0.2 * ExitParam) * Bigpointvalue * AvgTrueRange(AtrBarCount);
+    atrUnitS = (maxlist(highs1, closes2) - minlist(lows1, closes2)
+              + maxlist(highs2, closes3) - minlist(lows2, closes3)
+              + maxlist(highs3, closes4) - minlist(lows3, closes4)
+              + maxlist(highs4, closes5) - minlist(lows4, closes5)
+              + maxlist(highs5, closes6) - minlist(lows5, closes6)) / 5;
+    atrUnitS = (0.1 * ExitParam) * Bigpointvalue * atrUnitS;
+End else If BarType = 2 then begin // Daily
+    atrUnitB = (0.1 * ExitParam) * Bigpointvalue * AvgTrueRange(AtrBarCount);
+    atrUnitS = atrUnitB;
+End else
+    Raiseruntimeerror("Invalid bar type!");
+
+pctUnit1 = (0.500 * ExitParam) * Bigpointvalue / 100;
+pctUnit2 = (1.667 * ExitParam) * Bigpointvalue / 100;
+pctUnit3 = (3.333 * ExitParam) * Bigpointvalue / 100;
+pctUnit4 = (6.666 * ExitParam) * Bigpointvalue / 100;
+
+nBars1   = 0.5 * ExitParam;
+nBars2   = 1.0 * ExitParam;
+nBars3   = 2.0 * ExitParam;
+nBars4   = 3.0 * ExitParam;
+
+// ==== No exits ==================================================================================
+if ExitType = 0 then begin
+
+// ==== After N bars ==============================================================================
+end else if ExitType = 1 then begin
+    if Barssinceentry >= nBars4 then begin
+        Sell("LXT-1") next bar at market;
+        Buytocover("SXT-1") next bar at market;
+    end;
+
+// ==== By profit/stop based on AtrB ==============================================================
+end else if ExitType = 2 then begin
+    Setstoploss(atrUnitB);
+end else if ExitType = 3 then begin
+    Setprofittarget(atrUnitB);
+    Setstoploss(atrUnitB);
+end else if ExitType = 4 then begin
+    Setprofittarget(atrUnitB * ProfitToStopRatio);
+    Setstoploss(atrUnitB);
+
+// ==== By profit/stop based on AtrS ==============================================================
+end else if ExitType = 5 then begin
+    Setstoploss(atrUnitS);
+end else if ExitType = 6 then begin
+    Setprofittarget(atrUnitS);
+    Setstoploss(atrUnitS);
+end else if ExitType = 7 then begin
+    Setprofittarget(atrUnitS * ProfitToStopRatio);
+    Setstoploss(atrUnitS);
+
+// ==== By profit/stop based on percentage gain/loss ==============================================
+end else if ExitType = 8 then begin
+    If mp <> 0 then begin
+        Setprofittarget(Entryprice * pctUnit1);
+        Setstoploss(Entryprice * pctUnit1);
+    end;
+end else if ExitType = 9 then begin
+    If mp <> 0 then begin
+        Setprofittarget(Entryprice * pctUnit1 * ProfitToStopRatio);
+        Setstoploss(Entryprice * pctUnit1);
+    end;
+
+// ==== On close ==================================================================================
+end else if ExitType = 10 then begin
+    Setexitonclose;
+end else if ExitType = 11 then begin
+    If mp <> 0 and Openpositionprofit > 0 then Setexitonclose;
+end else if ExitType = 12 then begin
+    If mp <> 0 and Openpositionprofit < 0 then Setexitonclose;
+end else if ExitType = 13 then begin
+    If BarType = 1 then
+    	If (mp > 0 and C > closes1) or (mp < 0 and C < closes1) then Setexitonclose
+    Else If BarType = 2 then
+    	If (mp > 0 and C > C[1]) or (mp < 0 and C < C[1]) then Setexitonclose;
+end else if ExitType = 14 then begin
+    If BarType = 1 then
+	    If (mp > 0 and C > opens0) or (mp < 0 and C < opens0) then Setexitonclose
+    Else If BarType = 2 then
+    	If (mp > 0 and C > O) or (mp < 0 and C < O) then Setexitonclose;
+
+// ==== After N bars at last bar's high/low stop ==================================================
+end else if ExitType = 15 then begin
+    if Barssinceentry > nBars4 then begin
+        Sell("LXT-15") next bar at L[1] stop;
+        Buytocover("SXT-15") next bar at H[1] stop;
+    end;
+end else if ExitType = 16 then begin
+    if Barssinceentry > nBars4 then begin
+        Sell("LXT-16") next bar at H[1] limit;
+        Buytocover("SXT-16") next bar at L[1] limit;
+    end;
+
+// ==== After N bars and after below highest low M times ==========================================
+end else if ExitType = 17 then begin
+    Var: Counter17(0);
+    if mp = 0 then Counter17 = 0 
+    else if Barssinceentry > nBars3 then begin
+        if mp > 0 then begin
+            if L <= Highest(L, 5) then Counter17 = Counter17 + 1;
+            if Counter17 > 3 then 
+                Sell("LXT-17") next bar at market;
+        end else if mp < 0 then begin
+            if H >= Lowest(H, 5) then Counter17 = Counter17 + 1;
+            if Counter17 > 3 then begin
+                Buytocover("SXT-17") next bar at market;
+            end;
+        end;
+    end;
+
+// ==== Above/below EMA ===========================================================================
+end else if ExitType = 18 then begin
+    if C > XAverage(C, nBars4) then Sell("LXT-18") next bar at market;
+    if C < XAverage(C, nBars4) then Buytocover("SXT-18") next bar at market;
+end else if ExitType = 19 then begin
+    if C < XAverage(C, nBars4) then Sell("LXT-19") next bar at market;
+    if C > XAverage(C, nBars4) then Buytocover("SXT-19") next bar at market;
+
+// ==== At High/low of last N bars ================================================================
+end else if ExitType = 20 then begin
+    if C >= Highest(C, nBars2) then Sell("LXT-20") next bar at market;
+    if C <=  Lowest(C, nBars2) then Buytocover("SXT-20") next bar at market;
+end else if ExitType = 21 then begin
+    if C >= Highest(C, nBars2) then Buytocover("SXT-21") next bar at market;
+    if C <=  Lowest(C, nBars2) then Sell("LXT-21") next bar at market;
+
+// ==== At High/low of last N bars, variable length  ==============================================
+end else if ExitType = 22 then begin
+    var: liqdays22(0);
+    if marketposition <> 0 and barssinceentry > nBars2 * 2 / 3 then liqdays22 = maxlist(liqdays22 - 1, 1)
+    else liqdays22 = nBars2 / 3; 
+    if marketposition > 0 then
+        sell("LXT-22") next bar at lowest(l, liqdays22) stop;
+    if marketposition < 0 then
+        buytocover("SXT-22") next bar at highest(h, liqdays22) stop;
+
+// =============================== END OF EXITS ===================================================
+end;

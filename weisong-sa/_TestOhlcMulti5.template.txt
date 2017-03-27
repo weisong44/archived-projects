@@ -1,0 +1,50 @@
+//===== Inputs ================================================================================
+input: MyStartTime(0), MyEndTime(0);
+
+//===== Test OHLC =============================================================================
+array: ohlcValues[23](0);
+vars: ret(true), checkAll(true), isTheSame(false);
+
+ret = _OHLCMulti5(MyStartTime, MyEndTime, ohlcValues);
+
+if MyStartTime = 0 and MyEndTime = 0 then begin
+    if checkAll then begin
+        isTheSame = 
+                ohlcValues[ 0]=opend(0) and ohlcValues[ 1]=highd(0) and ohlcValues[ 2]=lowd(0) and ohlcValues[ 3]=closed(0)
+            and ohlcValues[ 4]=opend(1) and ohlcValues[ 5]=highd(1) and ohlcValues[ 6]=lowd(1) and ohlcValues[ 7]=closed(1)
+            and ohlcValues[ 8]=opend(2) and ohlcValues[ 9]=highd(2) and ohlcValues[10]=lowd(2) and ohlcValues[11]=closed(2)
+            and ohlcValues[12]=opend(3) and ohlcValues[13]=highd(3) and ohlcValues[14]=lowd(3) and ohlcValues[15]=closed(3)
+            and ohlcValues[16]=opend(4) and ohlcValues[17]=highd(4) and ohlcValues[18]=lowd(4) and ohlcValues[19]=closed(4)
+            and ohlcValues[20]=opend(5) and ohlcValues[21]=highd(5) and ohlcValues[22]=lowd(5) and ohlcValues[23]=closed(5);
+    end else begin
+        isTheSame = 
+                ohlcValues[ 0]=opend(0) and ohlcValues[ 1]=highd(0) and ohlcValues[ 2]=lowd(0) and ohlcValues[ 3]=closed(0);
+    end;
+
+    if not isTheSame then begin
+        print("D,", date:0:0, ",", time:0:0, ",  ,"
+            , O:0:4, "," , H:0:4, "," , L:0:4, "," , C:0:4, ",  ,"
+            , ohlcValues[0]:0:4, ",", ohlcValues[1]:0:4, ",", ohlcValues[2]:0:4, ",", ohlcValues[3]:0:4, ",  ,"
+            , opend(0):0:4, ",", highd(0):0:4, ",", lowd(0):0:4, ",", closed(0):0:4);
+    end;
+end else begin
+    if checkAll then begin
+        isTheSame = 
+                ohlcValues[ 0]=Open${SESSION}0) and ohlcValues[ 1]=High${SESSION}0) and ohlcValues[ 2]=Low${SESSION}0) and ohlcValues[ 3]=Close${SESSION}0)
+            and ohlcValues[ 4]=Open${SESSION}1) and ohlcValues[ 5]=High${SESSION}1) and ohlcValues[ 6]=Low${SESSION}1) and ohlcValues[ 7]=Close${SESSION}1)
+            and ohlcValues[ 8]=Open${SESSION}2) and ohlcValues[ 9]=High${SESSION}2) and ohlcValues[10]=Low${SESSION}2) and ohlcValues[11]=Close${SESSION}2)
+            and ohlcValues[12]=Open${SESSION}3) and ohlcValues[13]=High${SESSION}3) and ohlcValues[14]=Low${SESSION}3) and ohlcValues[15]=Close${SESSION}3)
+            and ohlcValues[16]=Open${SESSION}4) and ohlcValues[17]=High${SESSION}4) and ohlcValues[18]=Low${SESSION}4) and ohlcValues[19]=Close${SESSION}4)
+            and ohlcValues[20]=Open${SESSION}5) and ohlcValues[21]=High${SESSION}5) and ohlcValues[22]=Low${SESSION}5) and ohlcValues[23]=Close${SESSION}5);
+    end else begin
+        isTheSame = 
+                ohlcValues[ 0]=Open${SESSION}0) and ohlcValues[ 1]=High${SESSION}0) and ohlcValues[ 2]=Low${SESSION}0) and ohlcValues[ 3]=Close${SESSION}0);
+    end;
+
+    if not isTheSame then begin
+        print("S,", date:0:0, ",", time:0:0, ",  ,"
+            , O:0:4, "," , H:0:4, "," , L:0:4, "," , C:0:4, ",  ,"
+            , ohlcValues[0]:0:4, ",", ohlcValues[1]:0:4, ",", ohlcValues[2]:0:4, ",", ohlcValues[3]:0:4, ",  ,"
+            , Open${SESSION}0):0:4, ",", High${SESSION}0):0:4, ",", Low${SESSION}0):0:4, ",", Close${SESSION}0):0:4);
+    end;
+end;

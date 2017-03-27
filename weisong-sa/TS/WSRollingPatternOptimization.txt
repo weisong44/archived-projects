@@ -1,0 +1,385 @@
+using elsystem;
+using elsystem.windows.forms;
+using elsystem.drawing;
+
+inputs:
+   bool   IsTestMode(false),
+   int    MaxBars(50),
+   int    Interval(60),
+   string ResultsPath("D:\Temp\"),
+   string FileTag("");
+
+vars:
+   Form form1(null),
+   Button startButton(null),
+   tsopt.Optimizer optimizer(null),
+   intrabarpersist int DateCount(0),
+   intrabarpersist int DateIndex(0),
+   intrabarpersist string TestSym(""),
+   intrabarpersist string TestCat(""),
+   intrabarpersist double TestComm(0),
+   intrabarpersist double TestSlip(0),
+   intrabarpersist string CurFirstDate(""),
+   intrabarpersist string CurLastDate(""),
+   intrabarpersist bool isOptimizing(false);
+
+arrays:
+   intrabarpersist string FirstDateList[100](""),
+   intrabarpersist string LastDateList [100]("");
+
+//========================================================
+// AddStrategy - customization point
+//========================================================
+method void AddStrategy(tsopt.Job job)
+vars:
+   tsopt.Strategy strategy;
+begin
+   strategy = job.Strategies.AddStrategy("Test121");
+//   strategy = job.Strategies.AddStrategy("WS-TestStartAndEndTime");
+
+//   strategy.ELInputs.OptRange("MyLEStartTime", 0, 2300, 100);
+//   strategy.ELInputs.OptRange("MyLEEndTime", 0, 2300, 100);
+
+//   strategy.ELInputs.OptRange("MyLEStartTime", 0, 2300, 100);
+//   strategy.ELInputs.OptRange("MyLEEndTime", 600, 1600, 100);
+   strategy.ELInputs.OptRange("MyPtnLY", 1, 41, 1);
+//   strategy.ELInputs.OptRange("MyPtnLN", 1, 41, 1);
+
+//   strategy.ELInputs.OptRange("MySEStartTime", 0, 2300, 100);
+//   strategy.ELInputs.OptRange("MySEEndTime", 700, 1100, 100);
+   strategy.ELInputs.OptRange("MyPtnSY", 1, 41, 1);
+//   strategy.ELInputs.OptRange("MyPtnSN", 1, 41, 1);
+end;
+
+//========================================================
+// AddAllSymbols - customization point
+//========================================================
+method void AddAllSymbols(tsopt.Job job)
+begin
+   AddSymbol(job, TestSym);
+//   AddSymbol(job, CurSymbol);
+end;
+
+//========================================================
+// DefineJob - customization point
+//========================================================
+method tsopt.Job DefineJob()
+vars:
+   tsopt.Job job;
+begin
+   job = new tsopt.Job;
+   AddStrategy(job);
+   AddAllSymbols(job);
+   job.OptimizationMethod = tsopt.OptimizationMethod.Exhaustive;
+   job.Settings.GeneralOptions.LookInsideBarResQty = 1;
+   // Look inside bars
+   job.Settings.GeneralOptions.LookInsideBarEnabled = false;
+   job.Settings.GeneralOptions.LookInsideBarResQty = 1;
+   job.Settings.GeneralOptions.LookInsideBarResUnit = tsopt.Compression.Minute;
+   // Other
+   job.Settings.BackTesting.FillModel = tsopt.FillModel.PriceExceedsLimit;
+   job.Settings.CostsAndCapital.CommissionAmount = TestComm;
+   job.Settings.CostsAndCapital.SlippageAmount = TestSlip;
+   job.Settings.GeneralOptions.MaxBarsBack = MaxBars;
+   job.Settings.ResultOptions.NumTestsToKeep = 10000;
+   job.Settings.TradeSize.TradeSizeMode = tsopt.TradeSizeMode.FixedShares;
+   job.Settings.TradeSize.FixedShares = 1;
+//   job.Settings.TradeSize.FixedCurrency = 100000;
+   job.Settings.TradeSize.MinShares = 1;
+   job.Settings.TradeSize.RoundDownShares = 1;
+   return job;
+end;
+
+//========================================================
+// Prepare
+//========================================================
+method void Prepare()
+begin
+   Print("Preparing symbols, commission and slippage amounts ...");
+   
+   // Currency
+   //TestSym = "@AD";  TestCat = "CUR";  TestComm = 2.50; TestSlip = 10.00; 
+   //TestSym = "@BP";  TestCat = "CUR";  TestComm = 2.50; TestSlip =  7.50; 
+   //TestSym = "@CD";  TestCat = "CUR";  TestComm = 2.50; TestSlip = 10.00; 
+   //TestSym = "@DX";  TestCat = "CUR";  TestComm = 2.50; TestSlip =  7.50; 
+   //TestSym = "@EC";  TestCat = "CUR";  TestComm = 2.50; TestSlip = 12.50; 
+   //TestSym = "@JY";  TestCat = "CUR";  TestComm = 2.50; TestSlip = 12.50; 
+   //TestSym = "@MP1"; TestCat = "CUR";  TestComm = 2.50; TestSlip = 10.00; 
+   //TestSym = "@SF";  TestCat = "CUR";  TestComm = 2.50; TestSlip = 15.00; 
+   // Ags
+   //TestSym = "@S";   TestCat = "AGS";  TestComm = 2.50; TestSlip = 12.50; 
+   //TestSym = "@FC";  TestCat = "AGS";  TestComm = 2.50; TestSlip = 42.50; 
+   //TestSym = "@O";   TestCat = "AGS";  TestComm = 2.50; TestSlip = 47.50; 
+   //TestSym = "@LH";  TestCat = "AGS";  TestComm = 2.50; TestSlip = 17.50; 
+   //TestSym = "@LC";  TestCat = "AGS";  TestComm = 2.50; TestSlip = 17.50; 
+   //TestSym = "@W";   TestCat = "AGS";  TestComm = 2.50; TestSlip = 12.50; 
+   //TestSym = "@C";   TestCat = "AGS";  TestComm = 2.50; TestSlip = 10.00; 
+   //TestSym = "@RR";  TestCat = "AGS";  TestComm = 2.50; TestSlip = 47.50; 
+   //TestSym = "@BO";  TestCat = "AGS";  TestComm = 2.50; TestSlip =  7.50; 
+   //TestSym = "@KW";  TestCat = "AGS";  TestComm = 2.50; TestSlip = 15.00; 
+   //TestSym = "@SM";  TestCat = "AGS";  TestComm = 2.50; TestSlip = 12.50; 
+   // Softs
+   //TestSym = "@CC";  TestCat = "SFT";  TestComm = 2.50; TestSlip = 12.50; 
+   //TestSym = "@CT";  TestCat = "SFT";  TestComm = 2.50; TestSlip = 17.50; 
+   //TestSym = "@KC";  TestCat = "SFT";  TestComm = 2.50; TestSlip = 32.50; 
+   //TestSym = "@OJ";  TestCat = "SFT";  TestComm = 2.50; TestSlip = 72.50; 
+   //TestSym = "@SB";  TestCat = "SFT";  TestComm = 2.50; TestSlip = 10.00; 
+   // Energy
+   //TestSym = "@RB";  TestCat = "ENG";  TestComm = 2.50; TestSlip = 35.00; 
+   //TestSym = "@NG";  TestCat = "ENG";  TestComm = 2.50; TestSlip = 15.00; 
+   //TestSym = "@HO";  TestCat = "ENG";  TestComm = 2.50; TestSlip = 30.00; 
+   //TestSym = "@CL";  TestCat = "ENG";  TestComm = 2.50; TestSlip = 12.50; 
+   // Interest rates
+   //TestSym = "@US";  TestCat = "INT";  TestComm = 2.50; TestSlip = 30.00; 
+   //TestSym = "@FV";  TestCat = "INT";  TestComm = 2.50; TestSlip =  7.50; 
+   //TestSym = "@TY";  TestCat = "INT";  TestComm = 2.50; TestSlip = 15.00; 
+   //TestSym = "@ED";  TestCat = "INT";  TestComm = 2.50; TestSlip = 10.00; 
+   // Stock indices
+   //TestSym = "@NQ";  TestCat = "STK";  TestComm = 2.50; TestSlip =  7.50; 
+   //TestSym = "@ES";  TestCat = "STK";  TestComm = 2.50; TestSlip = 10.00; 
+   //TestSym = "@EMD"; TestCat = "STK";  TestComm = 2.50; TestSlip = 22.50; 
+   //TestSym = "@TF";  TestCat = "STK";  TestComm = 2.50; TestSlip = 17.50; 
+   //TestSym = "@YM";  TestCat = "STK";  TestComm = 2.50; TestSlip =  7.50; 
+   //TestSym = "@NK";  TestCat = "STK";  TestComm = 2.50; TestSlip = 27.50; 
+   // Metal
+   //TestSym = "@SI";  TestCat = "MET";  TestComm = 2.50; TestSlip = 30.00; 
+   //TestSym = "@HG" ; TestCat = "MET";  TestComm = 2.50; TestSlip = 15.00; 
+   //TestSym = "@PL";  TestCat = "MET";  TestComm = 2.50; TestSlip = 57.50; 
+   //TestSym = "@GC";  TestCat = "MET";  TestComm = 2.50; TestSlip = 27.50; 
+   
+   TestSym = "@PL";   TestCat = "ENG";  TestComm = 5; TestSlip = 20; 
+
+   DateCount = 0;
+   DateIndex = 0;
+   
+   if isTestMode = true then begin
+      FirstDateList[DateCount] = "01/01/2009"; LastDateList[DateCount] = "01/01/2011"; DateCount=DateCount + 1; 
+   end else begin
+//      FirstDateList[DateCount] = "01/01/2008"; LastDateList[DateCount] = "01/01/2010"; DateCount=DateCount + 1; 
+//      FirstDateList[DateCount] = "06/30/2008"; LastDateList[DateCount] = "06/30/2010"; DateCount=DateCount + 1; 
+      FirstDateList[DateCount] = "01/01/2009"; LastDateList[DateCount] = "01/01/2011"; DateCount=DateCount + 1; 
+      FirstDateList[DateCount] = "06/30/2009"; LastDateList[DateCount] = "06/30/2011"; DateCount=DateCount + 1; 
+      FirstDateList[DateCount] = "01/01/2010"; LastDateList[DateCount] = "01/01/2012"; DateCount=DateCount + 1; 
+      FirstDateList[DateCount] = "06/30/2010"; LastDateList[DateCount] = "06/30/2012"; DateCount=DateCount + 1; 
+      FirstDateList[DateCount] = "01/01/2011"; LastDateList[DateCount] = "01/01/2013"; DateCount=DateCount + 1; 
+      FirstDateList[DateCount] = "06/30/2011"; LastDateList[DateCount] = "06/30/2013"; DateCount=DateCount + 1; 
+      FirstDateList[DateCount] = "01/01/2012"; LastDateList[DateCount] = "01/01/2014"; DateCount=DateCount + 1; 
+      FirstDateList[DateCount] = "06/30/2012"; LastDateList[DateCount] = "06/30/2014"; DateCount=DateCount + 1; 
+      FirstDateList[DateCount] = "01/01/2013"; LastDateList[DateCount] = "01/01/2015"; DateCount=DateCount + 1; 
+//      FirstDateList[DateCount] = "06/30/2013"; LastDateList[DateCount] = "06/30/2015"; DateCount=DateCount + 1; 
+//      FirstDateList[DateCount] = "01/01/2014"; LastDateList[DateCount] = "01/01/2016"; DateCount=DateCount + 1; 
+//      FirstDateList[DateCount] = "06/30/2014"; LastDateList[DateCount] = "06/30/2016"; DateCount=DateCount + 1; 
+//      FirstDateList[DateCount] = "01/01/2015"; LastDateList[DateCount] = "01/01/2017"; DateCount=DateCount + 1; 
+//      FirstDateList[DateCount] = "06/30/2015"; LastDateList[DateCount] = "06/30/2017"; DateCount=DateCount + 1; 
+   end;
+
+
+
+end;
+
+//========================================================
+// AddSymbol
+//========================================================
+method void AddSymbol(tsopt.Job job, string sym)
+vars:
+   tsopt.Security security,
+   int minutes;
+begin
+   security = job.Securities.AddSecurity();
+   security.Symbol = sym;
+   //
+   // Handle Dates
+   //
+   security.History.FirstDateString = CurFirstDate;
+   security.History.LastDateString = CurLastDate;
+   security.SecurityOptions.TimeZone = Timezone.exchange;
+   //
+   // Handle Session
+   //
+   security.SecurityOptions.TimeZone = timezone.exchange;
+//   security.SecurityOptions.SessionName = "Sun-Sat 1000-1000";
+   security.SecurityOptions.SessionName = "Sun-Sat 1900-1900";
+   //
+   // Handle Intervals
+   //
+   if job.Securities.Count = 1 then begin
+      security.OptInterval.AddMinuteChart(Interval);
+   end else begin
+      security.OptInterval.AddDailyChart();
+   end;
+end;
+
+//========================================================
+// RunNextOptimization
+//========================================================
+method void RunNextOptimization()
+vars:
+   tsopt.Job job;
+begin
+   if DateIndex < DateCount Then begin
+      // Set current values
+      CurFirstDate = FirstDateList[DateIndex];
+      CurLastDate  = LastDateList [DateIndex];
+      // Create job
+      job = DefineJob();
+      DateIndex = DateIndex + 1;
+      // Run test
+      Print("===== ", CurFirstDate, "-", CurLastDate, " =====");
+      try   
+         PrintJobSettings(job);
+         optimizer.StartJob(job);
+      catch (tsopt.OptimizationException err)
+         throw err; // Re-throw any other errors so they are displayed in the Events Log
+      end;
+   end
+   else begin
+      Print("===== ALL DONE!!! =====");
+      ResetOptimization();
+   end;
+end;
+
+method void PrintJobSettings(tsopt.Job job)
+begin
+   // Print out info   
+   Print("  Job settings");
+   Print("   - From: ", CurFirstDate);
+   Print("   - To: ", CurLastDate);
+   Print("   - Interval: ", Interval:0:0, " min");
+   Print("   - MaxBarsBack: ", job.Settings.GeneralOptions.MaxBarsBack:0:0);
+   Print("   - Commission: ", job.Settings.CostsAndCapital.CommissionAmount);
+   Print("   - Slippage: ", job.Settings.CostsAndCapital.SlippageAmount);
+   if job.Settings.GeneralOptions.LookInsideBarEnabled then begin
+      Print("   - LookInsideBar: ", 
+         job.Settings.GeneralOptions.LookInsideBarResQty, 
+         job.Settings.GeneralOptions.LookInsideBarResUnit.ToString());
+   end else begin
+      Print("   - LookInsideBar: disabled");
+   end;
+end;
+
+method void InitApp( elsystem.Object sender, elsystem.InitializedEventArgs args ) 
+begin
+   // Initialize optimizer
+   optimizer = new tsopt.Optimizer;
+   
+   optimizer.JobDone += OptDone;
+   optimizer.JobFailed += OptError;
+   optimizer.ProgressChanged += OptProgress;
+
+   // Initialize form
+   form1 = Form.Create("Wei - Rolling patterns", 500, 500);
+   form1.BackColor = Color.LightGray;
+   form1.Dock = DockStyle.Right;
+
+   startButton = Button.Create("Start Optimization", 140, 30);
+   startButton.Location(20, 20);
+   startButton.Click += OnStartButtonClick;
+   form1.AddControl(startButton);
+
+   form1.Show();
+end;
+
+// Helper method to make sure that we have a valid file name
+method bool CheckValidFileLocation(string filename)
+vars:
+   elsystem.io.StreamWriter writer;
+begin
+   try
+      writer = elsystem.io.StreamWriter.Create(filename);
+      writer.Close();
+   catch (Exception ex)
+      return false;
+   end;
+   
+   FileDelete(filename);
+   return true;
+end;
+
+method string GetResultFile()
+vars:
+	string y1,
+	string y2,
+	string m1,
+	string m2;
+begin
+   y1 = Numtostr(Yearfromdatetime(Stringtodate(CurFirstDate)), 0);
+   y2 = Numtostr(Yearfromdatetime(Stringtodate(CurLastDate)), 0);
+   m1 = Numtostr(Monthfromdatetime(Stringtodate(CurFirstDate)), 0);
+   m2 = Numtostr(Monthfromdatetime(Stringtodate(CurLastDate)), 0);
+   if FileTag <> "" then begin
+      return ResultsPath + "OptResult_" + TestSym + "_" + y1 + "-" + m1 + "_" + y2 + "-" + m2 + "_" + FileTag + ".csv";
+   end else begin
+      return ResultsPath + "OptResult_" + TestSym + "_" + y1 + "-" + m1 + "_" + y2 + "-" + m2 + ".csv";
+   end;
+end;
+
+method void OnStartButtonClick(elsystem.Object sender, elsystem.EventArgs args)
+vars:
+   tsopt.Job job;
+begin
+   // If we are already optimizing, the Start button acts as a Cancel button
+   if isOptimizing then begin
+      optimizer.CancelJob();
+      return;
+   end;
+   
+   // Make sure that the results file name is valid before starting the optimization
+   if not CheckValidFileLocation(GetResultFile()) then begin
+      Print("ERROR: invalid path for results file: ", GetResultFile());
+      return;
+   end;
+   
+   ClearPrintLog;   
+   Print("Starting optimization...");
+   
+   // Start optimization
+   StartOptimization();
+   RunNextOptimization();
+	
+end;
+
+method void StartOptimization()
+begin
+   Prepare();
+   isOptimizing = true;
+   startButton.Text = "Cancel Optimization";
+end;
+
+method void ResetOptimization()
+begin
+   isOptimizing = false;
+   startButton.Text = "Start Optimization";
+end;
+
+method void OptProgress(Object sender, tsopt.ProgressChangedEventArgs args)
+begin
+   if args.Progress.WaitingForData then
+      Print("  Waiting for data...")
+   else begin
+      Print("  Iteration ", args.Progress.TestNum.ToString(), " of ", args.Progress.TestCount.ToString());
+      //Print("    ", args.BestValues.FitnessName, " = ", args.BestValues.FitnessValue:0:0);
+   end;
+end;
+
+method void OptDone(object sender, tsopt.JobDoneEventArgs args)
+begin
+   if args.Canceled then
+      Print("  Optimization canceled")
+   else
+      Print("  Optimization successful");
+   Print("  Net Profit: ", args.Results.NetProfit():0:0);
+
+   // Save the optimization results in a CSV file.
+   // This file can be opened in a spreadsheet for analysis of the results.
+   args.Results.WriteFile(GetResultFile(), ",", tsopt.TradeType.alltrades, tsopt.ResultsRange.all);
+   Print("  Created ", GetResultFile());
+   
+   RunNextOptimization();
+end;
+
+method void OptError(Object sender, tsopt.JobFailedEventArgs args)
+begin
+   Print("  Optimization Error: ", args.Error.Message);
+   ResetOptimization();
+end;
+

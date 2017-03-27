@@ -1,0 +1,59 @@
+// This function is used to select a pair of counter patterns
+// Typical usage:
+//   MyPtnL = PtnBaseSAPair(5, "L"); if PtnBaseSA(MyPtnL) then ...
+//   MyPtnS = PtnBaseSAPair(5, "S"); if PtnBaseSA(MyPtnS) then ...
+
+input: 
+	index(numericsimple), // selector, 1-41
+	direction(string);    // L or S
+
+var: 
+	ptnL(0), ptnS(0);
+
+     if index =  0 then begin ptnL= 42; ptnS= 42; end
+else if index =  1 then begin ptnL= 41; ptnS= 41; end
+else if index =  2 then begin ptnL=  1; ptnS=  1; end
+else if index =  3 then begin ptnL=  2; ptnS=  2; end
+else if index =  4 then begin ptnL=  3; ptnS=  3; end
+else if index =  5 then begin ptnL=  4; ptnS=  6; end
+else if index =  6 then begin ptnL=  6; ptnS=  4; end
+else if index =  7 then begin ptnL=  5; ptnS=  7; end
+else if index =  8 then begin ptnL=  7; ptnS=  5; end
+else if index =  9 then begin ptnL=  8; ptnS=  9; end
+else if index = 10 then begin ptnL=  9; ptnS=  8; end
+else if index = 11 then begin ptnL= 10; ptnS= 11; end
+else if index = 12 then begin ptnL= 11; ptnS= 10; end
+else if index = 13 then begin ptnL= 12; ptnS= 13; end
+else if index = 14 then begin ptnL= 13; ptnS= 12; end
+else if index = 15 then begin ptnL= 14; ptnS= 15; end
+else if index = 16 then begin ptnL= 15; ptnS= 14; end
+else if index = 17 then begin ptnL= 16; ptnS= 17; end
+else if index = 18 then begin ptnL= 17; ptnS= 16; end
+else if index = 19 then begin ptnL= 18; ptnS= 19; end
+else if index = 20 then begin ptnL= 19; ptnS= 18; end
+else if index = 21 then begin ptnL= 20; ptnS= 22; end
+else if index = 22 then begin ptnL= 22; ptnS= 20; end
+else if index = 23 then begin ptnL= 21; ptnS= 23; end
+else if index = 24 then begin ptnL= 23; ptnS= 21; end
+else if index = 25 then begin ptnL= 24; ptnS= 26; end
+else if index = 26 then begin ptnL= 26; ptnS= 24; end
+else if index = 27 then begin ptnL= 25; ptnS= 27; end
+else if index = 28 then begin ptnL= 27; ptnS= 25; end
+else if index = 29 then begin ptnL= 28; ptnS= 29; end
+else if index = 30 then begin ptnL= 29; ptnS= 28; end
+else if index = 31 then begin ptnL= 30; ptnS= 31; end
+else if index = 32 then begin ptnL= 31; ptnS= 30; end
+else if index = 33 then begin ptnL= 32; ptnS= 32; end
+else if index = 34 then begin ptnL= 33; ptnS= 34; end
+else if index = 35 then begin ptnL= 34; ptnS= 33; end
+else if index = 36 then begin ptnL= 35; ptnS= 35; end
+else if index = 37 then begin ptnL= 36; ptnS= 36; end
+else if index = 38 then begin ptnL= 37; ptnS= 37; end
+else if index = 39 then begin ptnL= 38; ptnS= 38; end
+else if index = 40 then begin ptnL= 39; ptnS= 40; end
+else if index = 41 then begin ptnL= 40; ptnS= 39; end
+else RaiseRuntimeError("Input out of range, valid range is 0 to 41");
+
+     if "L" = direction then PtnBaseSAPair = ptnL
+else if "S" = direction then PtnBaseSAPair = ptnS
+else RaiseRuntimeError("Direction is either L or S");

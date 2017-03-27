@@ -1,0 +1,380 @@
+using elsystem;
+using elsystem.windows.forms;
+using elsystem.drawing;
+
+inputs:
+   bool   IsTestMode(false),
+   bool   UseDailySymbol(false),
+   string FirstDate("01/01/2012"),
+   string LastDate ("01/01/2014"),
+   int    MaxBars(50),
+   int    MinuteIntervalStart(60),
+   int    MinuteIntervalEnd(240),
+   int    MinuteIntervalStep(60),
+   string ResultsPath("D:\Temp\"),
+   string FileTag("");
+
+vars:
+   Form form1(null),
+   Button startButton(null),
+   tsopt.Optimizer optimizer(null),
+   intrabarpersist int SymCount(0),
+   intrabarpersist int SymIndex(0),
+   intrabarpersist string CurSymbol(""),
+   intrabarpersist string CurCategory(""),
+   intrabarpersist double CurCommissionAmount(0),
+   intrabarpersist double CurSlippageAmount(0),
+   intrabarpersist bool isOptimizing(false);
+
+arrays:
+   intrabarpersist string SymList[100](""),
+   intrabarpersist string CatList[100](""),
+   intrabarpersist double CommList[100](0),
+   intrabarpersist double SlipList[100](0);
+
+//========================================================
+// AddStrategy - customization point
+//========================================================
+method void AddStrategy(tsopt.Job job)
+vars:
+   tsopt.Strategy strategy;
+begin
+   strategy = job.Strategies.AddStrategy("Test121");
+   strategy.ELInputs.OptRange("MyStartTrade", 0, 2300, 100);
+   strategy.ELInputs.OptRange(  "MyEndTrade", 0, 2300, 100);
+
+//   strategy = job.Strategies.AddStrategy("Test123");
+//   strategy.ELInputs.OptRange("ratio", 0.5, 2, 0.5);
+//   strategy.ELInputs.OptRange("MyPtnLY", 1, 41, 1);
+//   strategy.ELInputs.OptRange("MyPtnSY", 42, 42, 1);
+//   strategy.ELInputs.OptRange("StartTime", 930, 1400, 100);
+end;
+
+//========================================================
+// AddAllSymbols - customization point
+//========================================================
+method void AddAllSymbols(tsopt.Job job)
+begin
+   AddSymbol(job, CurSymbol);
+//   AddSymbol(job, CurSymbol);
+end;
+
+//========================================================
+// DefineJob - customization point
+//========================================================
+method tsopt.Job DefineJob()
+vars:
+   tsopt.Job job;
+begin
+   job = new tsopt.Job;
+   AddStrategy(job);
+   AddAllSymbols(job);
+   job.OptimizationMethod = tsopt.OptimizationMethod.Exhaustive;
+   // Look inside bars
+   job.Settings.GeneralOptions.LookInsideBarEnabled = false;
+   job.Settings.GeneralOptions.LookInsideBarResUnit = tsopt.Compression.Minute;
+   job.Settings.GeneralOptions.LookInsideBarResQty = 1;
+   // Other
+   job.Settings.CostsAndCapital.CommissionAmount = CurCommissionAmount;
+   job.Settings.CostsAndCapital.SlippageAmount = CurSlippageAmount;
+   job.Settings.GeneralOptions.MaxBarsBack = MaxBars;
+   job.Settings.TradeSize.FixedShares = 1;
+   job.Settings.ResultOptions.NumTestsToKeep = 10000;
+   return job;
+end;
+
+//========================================================
+// Prepare
+//========================================================
+method void Prepare()
+begin
+   Print("Preparing symbols, commission and slippage amounts ...");
+   SymCount = 0;
+   SymIndex = 0;
+   
+if useDailySymbol = true then begin
+   if isTestMode = true then begin
+      SymList[SymCount] = "@ES.D";  CatList[SymCount] = "STK";  CommList[SymCount] = 2.50; SlipList[SymCount] = 10.00; SymCount=SymCount+1; 
+   end else begin
+      // Stock indices
+      SymList[SymCount] = "@NQ.D";  CatList[SymCount] = "STK";  CommList[SymCount] = 2.50; SlipList[SymCount] =  7.50; SymCount=SymCount+1; 
+      SymList[SymCount] = "@ES.D";  CatList[SymCount] = "STK";  CommList[SymCount] = 2.50; SlipList[SymCount] = 10.00; SymCount=SymCount+1; 
+      SymList[SymCount] = "@EMD.D"; CatList[SymCount] = "STK";  CommList[SymCount] = 2.50; SlipList[SymCount] = 22.50; SymCount=SymCount+1; 
+      SymList[SymCount] = "@TF.D";  CatList[SymCount] = "STK";  CommList[SymCount] = 2.50; SlipList[SymCount] = 17.50; SymCount=SymCount+1; 
+      SymList[SymCount] = "@YM.D";  CatList[SymCount] = "STK";  CommList[SymCount] = 2.50; SlipList[SymCount] =  7.50; SymCount=SymCount+1; 
+   end;
+end else begin
+   if isTestMode = true then begin
+      SymList[SymCount] = "@JY";  CatList[SymCount] = "CUR";  CommList[SymCount] = 2.50; SlipList[SymCount] = 12.50; SymCount=SymCount+1; 
+   {
+      SymList[SymCount] = "@EC";  CatList[SymCount] = "CUR";  CommList[SymCount] = 2.50; SlipList[SymCount] = 12.50; SymCount=SymCount+1; 
+      SymList[SymCount] = "@S";   CatList[SymCount] = "AGS";  CommList[SymCount] = 2.50; SlipList[SymCount] = 12.50; SymCount=SymCount+1; 
+      SymList[SymCount] = "@CC";  CatList[SymCount] = "SFT";  CommList[SymCount] = 2.50; SlipList[SymCount] = 12.50; SymCount=SymCount+1; 
+      SymList[SymCount] = "@CL";  CatList[SymCount] = "ENG";  CommList[SymCount] = 2.50; SlipList[SymCount] = 12.50; SymCount=SymCount+1; 
+      SymList[SymCount] = "@FV";  CatList[SymCount] = "INT";  CommList[SymCount] = 2.50; SlipList[SymCount] =  7.50; SymCount=SymCount+1; 
+   	  SymList[SymCount] = "@ES";  CatList[SymCount] = "STK";  CommList[SymCount] = 2.50; SlipList[SymCount] = 10.00; SymCount=SymCount+1; 
+      SymList[SymCount] = "@GC";  CatList[SymCount] = "MET";  CommList[SymCount] = 2.50; SlipList[SymCount] = 27.50; SymCount=SymCount+1; 
+   }
+   end else begin
+   	  // Currency
+      SymList[SymCount] = "@AD";  CatList[SymCount] = "CUR";  CommList[SymCount] = 2.50; SlipList[SymCount] = 10.00; SymCount=SymCount+1; 
+      SymList[SymCount] = "@BP";  CatList[SymCount] = "CUR";  CommList[SymCount] = 2.50; SlipList[SymCount] =  7.50; SymCount=SymCount+1; 
+      SymList[SymCount] = "@CD";  CatList[SymCount] = "CUR";  CommList[SymCount] = 2.50; SlipList[SymCount] = 10.00; SymCount=SymCount+1; 
+      SymList[SymCount] = "@DX";  CatList[SymCount] = "CUR";  CommList[SymCount] = 2.50; SlipList[SymCount] =  7.50; SymCount=SymCount+1; 
+      SymList[SymCount] = "@EC";  CatList[SymCount] = "CUR";  CommList[SymCount] = 2.50; SlipList[SymCount] = 12.50; SymCount=SymCount+1; 
+      SymList[SymCount] = "@JY";  CatList[SymCount] = "CUR";  CommList[SymCount] = 2.50; SlipList[SymCount] = 12.50; SymCount=SymCount+1; 
+      SymList[SymCount] = "@MP1"; CatList[SymCount] = "CUR";  CommList[SymCount] = 2.50; SlipList[SymCount] = 10.00; SymCount=SymCount+1; 
+      SymList[SymCount] = "@SF";  CatList[SymCount] = "CUR";  CommList[SymCount] = 2.50; SlipList[SymCount] = 15.00; SymCount=SymCount+1; 
+      // Ags
+      SymList[SymCount] = "@S";   CatList[SymCount] = "AGS";  CommList[SymCount] = 2.50; SlipList[SymCount] = 12.50; SymCount=SymCount+1; 
+      SymList[SymCount] = "@FC";  CatList[SymCount] = "AGS";  CommList[SymCount] = 2.50; SlipList[SymCount] = 42.50; SymCount=SymCount+1; 
+      SymList[SymCount] = "@O";   CatList[SymCount] = "AGS";  CommList[SymCount] = 2.50; SlipList[SymCount] = 47.50; SymCount=SymCount+1; 
+      SymList[SymCount] = "@LH";  CatList[SymCount] = "AGS";  CommList[SymCount] = 2.50; SlipList[SymCount] = 17.50; SymCount=SymCount+1; 
+      SymList[SymCount] = "@LC";  CatList[SymCount] = "AGS";  CommList[SymCount] = 2.50; SlipList[SymCount] = 17.50; SymCount=SymCount+1; 
+      SymList[SymCount] = "@W";   CatList[SymCount] = "AGS";  CommList[SymCount] = 2.50; SlipList[SymCount] = 12.50; SymCount=SymCount+1; 
+      SymList[SymCount] = "@C";   CatList[SymCount] = "AGS";  CommList[SymCount] = 2.50; SlipList[SymCount] = 10.00; SymCount=SymCount+1; 
+      SymList[SymCount] = "@RR";  CatList[SymCount] = "AGS";  CommList[SymCount] = 2.50; SlipList[SymCount] = 47.50; SymCount=SymCount+1; 
+      SymList[SymCount] = "@BO";  CatList[SymCount] = "AGS";  CommList[SymCount] = 2.50; SlipList[SymCount] =  7.50; SymCount=SymCount+1; 
+      SymList[SymCount] = "@KW";  CatList[SymCount] = "AGS";  CommList[SymCount] = 2.50; SlipList[SymCount] = 15.00; SymCount=SymCount+1; 
+      SymList[SymCount] = "@SM";  CatList[SymCount] = "AGS";  CommList[SymCount] = 2.50; SlipList[SymCount] = 12.50; SymCount=SymCount+1; 
+      // Softs
+      SymList[SymCount] = "@CC";  CatList[SymCount] = "SFT";  CommList[SymCount] = 2.50; SlipList[SymCount] = 12.50; SymCount=SymCount+1; 
+      SymList[SymCount] = "@CT";  CatList[SymCount] = "SFT";  CommList[SymCount] = 2.50; SlipList[SymCount] = 17.50; SymCount=SymCount+1; 
+      SymList[SymCount] = "@KC";  CatList[SymCount] = "SFT";  CommList[SymCount] = 2.50; SlipList[SymCount] = 32.50; SymCount=SymCount+1; 
+      SymList[SymCount] = "@OJ";  CatList[SymCount] = "SFT";  CommList[SymCount] = 2.50; SlipList[SymCount] = 72.50; SymCount=SymCount+1; 
+      SymList[SymCount] = "@SB";  CatList[SymCount] = "SFT";  CommList[SymCount] = 2.50; SlipList[SymCount] = 10.00; SymCount=SymCount+1; 
+      // Energy
+      SymList[SymCount] = "@RB";  CatList[SymCount] = "ENG";  CommList[SymCount] = 2.50; SlipList[SymCount] = 35.00; SymCount=SymCount+1; 
+      SymList[SymCount] = "@NG";  CatList[SymCount] = "ENG";  CommList[SymCount] = 2.50; SlipList[SymCount] = 15.00; SymCount=SymCount+1; 
+      SymList[SymCount] = "@HO";  CatList[SymCount] = "ENG";  CommList[SymCount] = 2.50; SlipList[SymCount] = 30.00; SymCount=SymCount+1; 
+      SymList[SymCount] = "@CL";  CatList[SymCount] = "ENG";  CommList[SymCount] = 2.50; SlipList[SymCount] = 12.50; SymCount=SymCount+1; 
+      // Interest rates
+      SymList[SymCount] = "@US";  CatList[SymCount] = "INT";  CommList[SymCount] = 2.50; SlipList[SymCount] = 30.00; SymCount=SymCount+1; 
+      SymList[SymCount] = "@FV";  CatList[SymCount] = "INT";  CommList[SymCount] = 2.50; SlipList[SymCount] =  7.50; SymCount=SymCount+1; 
+      SymList[SymCount] = "@TY";  CatList[SymCount] = "INT";  CommList[SymCount] = 2.50; SlipList[SymCount] = 15.00; SymCount=SymCount+1; 
+      SymList[SymCount] = "@ED";  CatList[SymCount] = "INT";  CommList[SymCount] = 2.50; SlipList[SymCount] = 10.00; SymCount=SymCount+1; 
+      // Stock indices
+      SymList[SymCount] = "@NQ";  CatList[SymCount] = "STK";  CommList[SymCount] = 2.50; SlipList[SymCount] =  7.50; SymCount=SymCount+1; 
+      SymList[SymCount] = "@ES";  CatList[SymCount] = "STK";  CommList[SymCount] = 2.50; SlipList[SymCount] = 10.00; SymCount=SymCount+1; 
+      SymList[SymCount] = "@EMD"; CatList[SymCount] = "STK";  CommList[SymCount] = 2.50; SlipList[SymCount] = 22.50; SymCount=SymCount+1; 
+      SymList[SymCount] = "@TF";  CatList[SymCount] = "STK";  CommList[SymCount] = 2.50; SlipList[SymCount] = 17.50; SymCount=SymCount+1; 
+      SymList[SymCount] = "@YM";  CatList[SymCount] = "STK";  CommList[SymCount] = 2.50; SlipList[SymCount] =  7.50; SymCount=SymCount+1; 
+      SymList[SymCount] = "@NK";  CatList[SymCount] = "STK";  CommList[SymCount] = 2.50; SlipList[SymCount] = 27.50; SymCount=SymCount+1; 
+      // Metal
+      SymList[SymCount] = "@SI";  CatList[SymCount] = "MET";  CommList[SymCount] = 2.50; SlipList[SymCount] = 30.00; SymCount=SymCount+1; 
+      SymList[SymCount] = "@HG" ; CatList[SymCount] = "MET";  CommList[SymCount] = 2.50; SlipList[SymCount] = 15.00; SymCount=SymCount+1; 
+      SymList[SymCount] = "@PL";  CatList[SymCount] = "MET";  CommList[SymCount] = 2.50; SlipList[SymCount] = 57.50; SymCount=SymCount+1; 
+      SymList[SymCount] = "@GC";  CatList[SymCount] = "MET";  CommList[SymCount] = 2.50; SlipList[SymCount] = 27.50; SymCount=SymCount+1; 
+   end;
+end;
+end;
+
+//========================================================
+// AddSymbol
+//========================================================
+method void AddSymbol(tsopt.Job job, string sym)
+vars:
+   tsopt.Security security,
+   int minutes;
+begin
+   security = job.Securities.AddSecurity();
+   security.Symbol = sym;
+   //
+   // Handle Dates
+   //
+   security.History.FirstDateString = FirstDate;
+   security.History.LastDateString = LastDate;
+   security.SecurityOptions.TimeZone = Timezone.exchange;
+   //
+   // Handle Session
+   //
+//   security.SecurityOptions.SessionName = "Future (Wei)";
+//   security.SecurityOptions.SessionName = "900-1430";
+   //
+   // Handle Intervals
+   //
+   if job.Securities.Count = 1 then begin
+      //security.OptInterval.AddDailyChart();
+      if MinuteIntervalStart > 0 Then begin
+         minutes = MinuteIntervalStart;
+         while minutes <= MinuteIntervalEnd begin
+            security.OptInterval.AddMinuteChart(minutes);
+            minutes += MinuteIntervalStep;
+         end;
+      end;
+   end else begin
+      security.OptInterval.AddDailyChart();
+   end;
+end;
+
+//========================================================
+// RunNextOptimization
+//========================================================
+method void RunNextOptimization()
+vars:
+   tsopt.Job job;
+begin
+   if SymIndex < SymCount Then begin
+      // Set current values
+      CurSymbol = SymList[SymIndex];
+      CurCategory = CatList[SymIndex];
+      CurCommissionAmount = CommList[SymIndex];
+      CurSlippageAmount = SlipList[SymIndex];
+      // Create job
+      job = DefineJob();
+      SymIndex = SymIndex + 1;
+      // Run test
+      Print("===== ", CurSymbol, " =====");
+      try   
+         PrintJobSettings(job);
+         optimizer.StartJob(job);
+      catch (tsopt.OptimizationException err)
+         throw err; // Re-throw any other errors so they are displayed in the Events Log
+      end;
+   end
+   else begin
+      Print("===== ALL DONE!!! =====");
+      ResetOptimization();
+   end;
+end;
+
+method void PrintJobSettings(tsopt.Job job)
+begin
+   // Print out info   
+   Print("  Job settings");
+   Print("   - FromDate: ", FirstDate);
+   Print("   - ToDate: ", LastDate);
+   if MinuteIntervalStart > 0 then begin
+      Print("   - Interval: daily, ", MinuteIntervalStart, "-", MinuteIntervalEnd, "[", MinuteIntervalStep, "min]");
+   end else begin
+      Print("   - Interval: daily");
+   end;
+   Print("   - MaxBarsBack: ", job.Settings.GeneralOptions.MaxBarsBack);
+   Print("   - Commission: ", job.Settings.CostsAndCapital.CommissionAmount);
+   Print("   - Slippage: ", job.Settings.CostsAndCapital.SlippageAmount);
+   if job.Settings.GeneralOptions.LookInsideBarEnabled then begin
+      Print("   - LookInsideBar: ", 
+         job.Settings.GeneralOptions.LookInsideBarResQty, 
+         job.Settings.GeneralOptions.LookInsideBarResUnit.ToString());
+   end else begin
+      Print("   - LookInsideBar: disabled");
+   end;
+end;
+
+method void InitApp( elsystem.Object sender, elsystem.InitializedEventArgs args ) 
+begin
+   // Initialize optimizer
+   optimizer = new tsopt.Optimizer;
+   
+   optimizer.JobDone += OptDone;
+   optimizer.JobFailed += OptError;
+   optimizer.ProgressChanged += OptProgress;
+
+   // Initialize form
+   form1 = Form.Create("Optimization Demo", 500, 500);
+   form1.BackColor = Color.LightGray;
+   form1.Dock = DockStyle.Right;
+
+   startButton = Button.Create("Start Optimization", 140, 30);
+   startButton.Location(20, 20);
+   startButton.Click += OnStartButtonClick;
+   form1.AddControl(startButton);
+
+   form1.Show();
+end;
+
+// Helper method to make sure that we have a valid file name
+method bool CheckValidFileLocation(string filename)
+vars:
+   elsystem.io.StreamWriter writer;
+begin
+   try
+      writer = elsystem.io.StreamWriter.Create(filename);
+      writer.Close();
+   catch (Exception ex)
+      return false;
+   end;
+   
+   FileDelete(filename);
+   return true;
+end;
+
+method string GetResultFile()
+begin
+   if FileTag <> "" then begin
+      return ResultsPath + "OptResult_" + CurCategory + "_" + CurSymbol + "_" + FileTag + ".csv";
+   end else begin
+      return ResultsPath + "OptResult_" + CurCategory + "_" + CurSymbol + ".csv";
+   end;
+end;
+
+method void OnStartButtonClick(elsystem.Object sender, elsystem.EventArgs args)
+vars:
+   tsopt.Job job;
+begin
+   // If we are already optimizing, the Start button acts as a Cancel button
+   if isOptimizing then begin
+      optimizer.CancelJob();
+      return;
+   end;
+   
+   // Make sure that the results file name is valid before starting the optimization
+   if not CheckValidFileLocation(GetResultFile()) then begin
+      Print("ERROR: invalid path for results file: ", GetResultFile());
+      return;
+   end;
+   
+   ClearPrintLog;   
+   Print("Starting optimization...");
+   
+   // Start optimization
+   StartOptimization();
+   RunNextOptimization();
+	
+end;
+
+method void StartOptimization()
+begin
+   Prepare();
+   isOptimizing = true;
+   startButton.Text = "Cancel Optimization";
+end;
+
+method void ResetOptimization()
+begin
+   isOptimizing = false;
+   startButton.Text = "Start Optimization";
+end;
+
+method void OptProgress(Object sender, tsopt.ProgressChangedEventArgs args)
+begin
+   if args.Progress.WaitingForData then
+      Print("  Waiting for data...")
+   else begin
+      Print("  Test ", args.Progress.TestNum.ToString(), " of ", args.Progress.TestCount.ToString());
+      Print("    ", args.BestValues.FitnessName, " = ", args.BestValues.FitnessValue.ToString());
+   end;
+end;
+
+method void OptDone(object sender, tsopt.JobDoneEventArgs args)
+begin
+   if args.Canceled then
+      Print("  Optimization canceled")
+   else
+      Print("  Optimization successful");
+   Print("  Net Profit: ", args.Results.NetProfit());
+
+   // Save the optimization results in a CSV file.
+   // This file can be opened in a spreadsheet for analysis of the results.
+   args.Results.WriteFile(GetResultFile(), ",", tsopt.TradeType.alltrades, tsopt.ResultsRange.all);
+   Print("  Created ", GetResultFile());
+   
+   RunNextOptimization();
+end;
+
+method void OptError(Object sender, tsopt.JobFailedEventArgs args)
+begin
+   Print("  Optimization Error: ", args.Error.Message);
+   ResetOptimization();
+end;
+

@@ -1,0 +1,230 @@
+
+input: numeropattern(numericsimple);
+
+var: opend0(0),opend1(0),opend2(0),opend3(0),opend4(0), opend5(0);
+var: highd0(0),highd1(0),highd2(0),highd3(0),highd4(0), highd5(0);
+var: lowd0(0),lowd1(0),lowd2(0),lowd3(0),lowd4(0), lowd5(0);
+var: closed0(0),closed1(0),closed2(0),closed3(0),closed4(0), closed5(0);
+var: body1d(0),range1d(0),body5d(0),range5d(0);
+
+opend0 = opend(0);
+opend1 = opend(1);
+opend2 = opend(2);
+opend3 = opend(3);
+opend4 = opend(4);
+opend5 = opend(5);
+
+highd0 = highd(0);
+highd1 = highd(1);
+highd2 = highd(2);
+highd3 = highd(3);
+highd4 = highd(4);
+highd5 = highd(5);
+
+lowd0 = lowd(0);
+lowd1 = lowd(1);
+lowd2 = lowd(2);
+lowd3 = lowd(3);
+lowd4 = lowd(4);
+lowd5 = lowd(5);
+
+closed0 = closed(0);
+closed1 = closed(1);
+closed2 = closed(2);
+closed3 = closed(3);
+closed4 = closed(4);
+closed5 = closed(5);
+
+body1d = absvalue(opend1-closed1);
+range1d = (highd1-lowd1);
+body5d = absvalue(opend5-closed1);
+range5d = maxlist(highd1, highd2, highd3, highd4, highd5) - minlist(lowd1, lowd2, lowd3, lowd4, lowd5);
+
+     if numeropattern =   0 then PtnBaseAU = false
+else if numeropattern =   1 then PtnBaseAU = true
+
+else if numeropattern =   2 then PtnBaseAU = body1d < 0.1  * range1d   
+else if numeropattern =   3 then PtnBaseAU = body1d < 0.25 * range1d  
+else if numeropattern =   4 then PtnBaseAU = body1d < 0.5  * range1d    
+else if numeropattern =   5 then PtnBaseAU = body1d < 0.75 * range1d  
+
+else if numeropattern =   6 then PtnBaseAU = body1d > 0.25 * range1d   
+else if numeropattern =   7 then PtnBaseAU = body1d > 0.5  * range1d 
+else if numeropattern =   8 then PtnBaseAU = body1d > 0.75 * range1d    
+else if numeropattern =   9 then PtnBaseAU = body1d > 0.9  * range1d 
+
+else if numeropattern =  10 then PtnBaseAU = body5d < 0.1  * (highd5-lowd1)   
+else if numeropattern =  11 then PtnBaseAU = body5d < 0.25 * (highd5-lowd1)  
+else if numeropattern =  12 then PtnBaseAU = body5d < 0.5  * (highd5-lowd1)    
+else if numeropattern =  13 then PtnBaseAU = body5d < 0.75 * (highd5-lowd1)  
+else if numeropattern =  14 then PtnBaseAU = body5d < 1    * (highd5-lowd1)   
+else if numeropattern =  15 then PtnBaseAU = body5d < 1.5  * (highd5-lowd1)  
+else if numeropattern =  16 then PtnBaseAU = body5d < 2    * (highd5-lowd1)   
+
+else if numeropattern =  17 then PtnBaseAU = body5d > 0.25 * (highd5-lowd1)   
+else if numeropattern =  18 then PtnBaseAU = body5d > 0.5  * (highd5-lowd1)  
+else if numeropattern =  19 then PtnBaseAU = body5d > 0.75 * (highd5-lowd1)    
+else if numeropattern =  20 then PtnBaseAU = body5d > 1    * (highd5-lowd1)  
+else if numeropattern =  21 then PtnBaseAU = body5d > 1.5  * (highd5-lowd1)  
+else if numeropattern =  22 then PtnBaseAU = body5d > 2    * (highd5-lowd1)  
+else if numeropattern =  23 then PtnBaseAU = body5d > 2.5  * (highd5-lowd1)   
+			 
+else if numeropattern =  24 then PtnBaseAU = body5d < 0.1  * range5d  
+else if numeropattern =  25 then PtnBaseAU = body5d < 0.25 * range5d 
+else if numeropattern =  26 then PtnBaseAU = body5d < 0.5  * range5d  
+else if numeropattern =  27 then PtnBaseAU = body5d < 0.75 * range5d   
+			 
+else if numeropattern =  28 then PtnBaseAU = body5d > 0.9  * range5d  
+else if numeropattern =  29 then PtnBaseAU = body5d > 0.25 * range5d  
+else if numeropattern =  30 then PtnBaseAU = body5d > 0.5  * range5d  
+else if numeropattern =  31 then PtnBaseAU = body5d > 0.75 * range5d   
+			 
+else if numeropattern =  32 then PtnBaseAU = ((highd0-opend0) > ((highd1-opend1) * 0.25))  
+else if numeropattern =  33 then PtnBaseAU = ((highd0-opend0) > ((highd1-opend1) * 0.50))   
+else if numeropattern =  34 then PtnBaseAU = ((highd0-opend0) > ((highd1-opend1) * 0.75))   
+else if numeropattern =  35 then PtnBaseAU = ((highd0-opend0) > ((highd1-opend1) * 1.00))   
+else if numeropattern =  36 then PtnBaseAU = ((highd0-opend0) > ((highd1-opend1) * 1.50))  
+else if numeropattern =  37 then PtnBaseAU = ((highd0-opend0) > ((highd1-opend1) * 2.00))   
+else if numeropattern =  38 then PtnBaseAU = ((highd0-opend0) > ((highd1-opend1) * 2.50))  
+else if numeropattern =  39 then PtnBaseAU = ((highd0-opend0) > ((highd1-opend1) * 3.00))   
+			 
+else if numeropattern =  40 then PtnBaseAU = ((highd0-opend0) < ((highd1-opend1)))   
+else if numeropattern =  41 then PtnBaseAU = ((opend0-lowd0)  < ((opend1-lowd1))) 
+			 
+else if numeropattern =  42 then PtnBaseAU = ((opend0-lowd0) > ((opend1-lowd1) * 0.5))   
+else if numeropattern =  43 then PtnBaseAU = ((opend0-lowd0) > ((opend1-lowd1) * 1.0)) 
+else if numeropattern =  44 then PtnBaseAU = ((opend0-lowd0) > ((opend1-lowd1) * 1.5))   
+else if numeropattern =  45 then PtnBaseAU = ((opend0-lowd0) > ((opend1-lowd1) * 2.0)) 
+else if numeropattern =  46 then PtnBaseAU = ((opend0-lowd0) > ((opend1-lowd1) * 2.5))   
+else if numeropattern =  47 then PtnBaseAU = ((opend0-lowd0) > ((opend1-lowd1) * 3.0)) 
+
+else if numeropattern =  48 then PtnBaseAU = closed1 > closed2 and closed2 > closed3 and closed3 > closed4 
+else if numeropattern =  49 then PtnBaseAU = closed1 < closed2 and closed2 < closed3 and closed3 < closed4
+else if numeropattern =  50 then PtnBaseAU = closed1 > closed2 and closed2 > closed3 and closed3 > closed4 and closed4 > closed5
+else if numeropattern =  51 then PtnBaseAU = closed1 < closed2 and closed2 < closed3 and closed3 < closed4 and closed4 < closed5
+else if numeropattern =  52 then PtnBaseAU = highd1  > highd2  and lowd1 > lowd2
+else if numeropattern =  53 then PtnBaseAU = highd1  < highd2  and lowd1 < lowd2
+			 
+else if numeropattern =  54 then PtnBaseAU = ((highd0 > (lowd0 + lowd0 * 0.50 * 0.01)))
+else if numeropattern =  55 then PtnBaseAU = ((highd0 > (lowd0 + lowd0 * 0.75 * 0.01)))
+else if numeropattern =  56 then PtnBaseAU = ((highd0 > (lowd0 + lowd0 * 1.00 * 0.01)))
+else if numeropattern =  57 then PtnBaseAU = ((highd0 > (lowd0 + lowd0 * 1.50 * 0.01)))
+else if numeropattern =  58 then PtnBaseAU = ((highd0 > (lowd0 + lowd0 * 2.00 * 0.01)))
+else if numeropattern =  59 then PtnBaseAU = ((highd0 > (lowd0 + lowd0 * 2.50 * 0.01)))	
+else if numeropattern =  60 then PtnBaseAU = ((highd0 > (lowd0 + lowd0 * 3.00 * 0.01)))
+			 
+else if numeropattern =  61 then PtnBaseAU = ((highd0 < (lowd0 + lowd0 * 0.50 * 0.01)))
+else if numeropattern =  62 then PtnBaseAU = ((highd0 < (lowd0 + lowd0 * 0.75 * 0.01)))
+else if numeropattern =  63 then PtnBaseAU = ((highd0 < (lowd0 + lowd0 * 1.00 * 0.01)))
+else if numeropattern =  64 then PtnBaseAU = ((highd0 < (lowd0 + lowd0 * 1.50 * 0.01)))
+else if numeropattern =  65 then PtnBaseAU = ((highd0 < (lowd0 + lowd0 * 2.00 * 0.01)))
+else if numeropattern =  66 then PtnBaseAU = ((highd0 < (lowd0 + lowd0 * 2.50 * 0.01)))
+else if numeropattern =  67 then PtnBaseAU = ((highd0 < (lowd0 + lowd0 * 3.00 * 0.01)))
+
+else if numeropattern =  68 then PtnBaseAU = (closed1>closed2)
+else if numeropattern =  69 then PtnBaseAU = (closed1<closed2)
+else if numeropattern =  70 then PtnBaseAU = (closed1<opend1)
+else if numeropattern =  71 then PtnBaseAU = (closed1>opend1)
+			 
+else if numeropattern =  72 then PtnBaseAU = ((closed1<(closed2-closed2*0.5*0.01)))
+else if numeropattern =  73 then PtnBaseAU = ((closed1<(closed2-closed2*1  *0.01)))
+else if numeropattern =  74 then PtnBaseAU = ((closed1<(closed2-closed2*1.5*0.01)))
+else if numeropattern =  75 then PtnBaseAU = ((closed1<(closed2-closed2*2  *0.01)))
+else if numeropattern =  76 then PtnBaseAU = ((closed1<(closed2-closed2*2.5*0.01)))
+else if numeropattern =  77 then PtnBaseAU = ((closed1<(closed2-closed2*3  *0.01)))
+			 
+else if numeropattern =  78 then PtnBaseAU = ((closed1>(closed2+closed2*0.5*0.01)))
+else if numeropattern =  79 then PtnBaseAU = ((closed1>(closed2+closed2*1  *0.01)))
+else if numeropattern =  80 then PtnBaseAU = ((closed1>(closed2+closed2*1.5*0.01)))
+else if numeropattern =  81 then PtnBaseAU = ((closed1>(closed2+closed2*2  *0.01)))
+			 
+else if numeropattern =  82 then PtnBaseAU = (highd0>(highd1))
+else if numeropattern =  83 then PtnBaseAU = (highd0>(highd1+highd1*0.25*0.01))
+else if numeropattern =  84 then PtnBaseAU = (highd0>(highd1+highd1*0.5 *0.01))
+else if numeropattern =  85 then PtnBaseAU = (highd0>(highd1+highd1*0.75*0.01))
+else if numeropattern =  86 then PtnBaseAU = (highd0>(highd1+highd1*1   *0.01))
+else if numeropattern =  87 then PtnBaseAU = (highd0>(highd1+highd1*1.5 *0.01))
+			 
+else if numeropattern =  88 then PtnBaseAU = (highd0<(highd1))
+else if numeropattern =  89 then PtnBaseAU = (highd0<(highd1-highd1*0.5*0.01))
+else if numeropattern =  90 then PtnBaseAU = (highd0<(highd1-highd1*1  *0.01))
+else if numeropattern =  91 then PtnBaseAU = (highd0<(highd1-highd1*1.5*0.01))
+else if numeropattern =  92 then PtnBaseAU = (highd0<(highd1-highd1*2  *0.01))
+else if numeropattern =  93 then PtnBaseAU = (highd0<(highd1-highd1*2.5*0.01))
+			 
+else if numeropattern =  94 then PtnBaseAU = (highd1>highd5)
+else if numeropattern =  95 then PtnBaseAU = (highd1<highd5)
+			 
+else if numeropattern =  96 then PtnBaseAU = (lowd0<lowd1)
+else if numeropattern =  97 then PtnBaseAU = (lowd0<(lowd1-lowd1*0.25*0.01))
+else if numeropattern =  98 then PtnBaseAU = (lowd0<(lowd1-lowd1*0.5 *0.01))
+else if numeropattern =  99 then PtnBaseAU = (lowd0<(lowd1-lowd1*0.75*0.01))
+else if numeropattern = 100 then PtnBaseAU = (lowd0<(lowd1-lowd1*1   *0.01))
+
+else if numeropattern = 101 then PtnBaseAU  = (lowd0>lowd1)
+else if numeropattern = 102 then PtnBaseAU = (lowd0>(lowd1+lowd1*0.5*0.01))
+else if numeropattern = 103 then PtnBaseAU = (lowd0>(lowd1+lowd1*1  *0.01))
+else if numeropattern = 104 then PtnBaseAU = (lowd0>(lowd1+lowd1*1.5*0.01))
+else if numeropattern = 105 then PtnBaseAU = (lowd0>(lowd1+lowd1*2  *0.01))
+else if numeropattern = 106 then PtnBaseAU = (lowd0>(lowd1+lowd1*2.5*0.01))
+
+else if numeropattern = 107 then PtnBaseAU = (lowd1<lowd5)
+else if numeropattern = 108 then PtnBaseAU = (lowd1>lowd5)
+
+else if numeropattern = 109 then PtnBaseAU = (highd1> highd2) and (highd1> highd3) and (highd1> highd4) 
+else if numeropattern = 110 then PtnBaseAU = (highd1< highd2) and (highd1< highd3) and (highd1< highd4) 
+else if numeropattern = 111 then PtnBaseAU = ((lowd1 < lowd2) and (lowd1 < lowd3) and (lowd1 < lowd4))
+else if numeropattern = 112 then PtnBaseAU = ((lowd1 > lowd2) and (lowd1 > lowd3) and (lowd1 > lowd4))
+else if numeropattern = 113 then PtnBaseAU = (closed1>closed2 and closed2>closed3 and opend0>closed1)
+else if numeropattern = 114 then PtnBaseAU = (closed1<closed2 and closed2<closed3 and opend0<closed1)
+
+else if numeropattern = 115 then PtnBaseAU = ((highd1-closed1)<0.20*range1d)
+else if numeropattern = 116 then PtnBaseAU = ((closed1-lowd1)<0.20*range1d)
+
+else if numeropattern = 117 then PtnBaseAU = (opend0<lowd1 or opend0>highd1)
+else if numeropattern = 118 then PtnBaseAU = (opend0<lowd1) 
+else if numeropattern = 119 then PtnBaseAU = (opend0>highd1)
+ 
+else if numeropattern = 120 then PtnBaseAU = ((opend0<(closed1-closed1*0.25*0.01)))
+else if numeropattern = 121 then PtnBaseAU = ((opend0<(closed1-closed1*0.5 *0.01)))
+else if numeropattern = 122 then PtnBaseAU = ((opend0<(closed1-closed1*0.75*0.01)))
+else if numeropattern = 123 then PtnBaseAU = ((opend0<(closed1-closed1*1   *0.01)))
+
+else if numeropattern = 124 then PtnBaseAU = ((opend0>(closed1+closed1*0.25*0.01)))
+else if numeropattern = 125 then PtnBaseAU = ((opend0>(closed1+closed1*0.5 *0.01)))
+else if numeropattern = 126 then PtnBaseAU = ((opend0>(closed1+closed1*0.75*0.01)))
+else if numeropattern = 127 then PtnBaseAU = ((opend0>(closed1+closed1*1   *0.01)))
+
+else if numeropattern = 128 then PtnBaseAU = (highd0<highd1 and lowd0>lowd1)
+else if numeropattern = 129 then PtnBaseAU = range1d < (((highd2-lowd2)+(highd3-lowd3))/3)
+else if numeropattern = 130 then PtnBaseAU = range1d < (highd2-lowd2) and (highd2-lowd2) < (highd3-lowd3) 
+else if numeropattern = 131 then PtnBaseAU = (highd2>highd1 and lowd2<lowd1)
+else if numeropattern = 132 then PtnBaseAU = (highd1<highd2)
+else if numeropattern = 133 then PtnBaseAU = (lowd1>lowd2)
+else if numeropattern = 134 then PtnBaseAU = (highd1<highd2 or lowd1>lowd2)
+else if numeropattern = 135 then PtnBaseAU = (highd2<highd1 and lowd2>lowd1)
+else if numeropattern = 136 then PtnBaseAU = (highd0>highd1 and lowd0<lowd1)
+
+else if numeropattern = 137 then PtnBaseAU = (closed1 > opend1 and  closed2 > opend2)  // UU
+else if numeropattern = 138 then PtnBaseAU = (closed1 < opend1 and  closed2 > opend2)  // UD
+else if numeropattern = 139 then PtnBaseAU = (closed1 > opend1 and  closed2 < opend2)  // DU
+else if numeropattern = 140 then PtnBaseAU = (closed1 < opend1 and  closed2 < opend2) // DD
+
+else if numeropattern = 141 then PtnBaseAU = (highd1-lowd1) < (highd2-lowd2)
+else if numeropattern = 142 then PtnBaseAU = (highd1-lowd1) > (highd2-lowd2)
+
+else if numeropattern = 143 then PtnBaseAU = (C > opend0 * 0.985)
+else if numeropattern = 144 then PtnBaseAU = (C > opend0 * 0.990)
+else if numeropattern = 145 then PtnBaseAU = (C > opend0 * 0.995)
+else if numeropattern = 146 then PtnBaseAU = (C > opend0 * 1.000)
+else if numeropattern = 147 then PtnBaseAU = (C > opend0 * 1.005)
+else if numeropattern = 148 then PtnBaseAU = (C > opend0 * 1.010)
+else if numeropattern = 149 then PtnBaseAU = (C > opend0 * 1.015)
+
+else if numeropattern = 150 then PtnBaseAU = (C < opend0 * 1.015)
+else if numeropattern = 151 then PtnBaseAU = (C < opend0 * 1.010)
+else if numeropattern = 152 then PtnBaseAU = (C < opend0 * 1.005)
+else if numeropattern = 153 then PtnBaseAU = (C < opend0 * 1.000)
+else if numeropattern = 154 then PtnBaseAU = (C < opend0 * 0.995)
+else if numeropattern = 155 then PtnBaseAU = (C < opend0 * 0.990)
+else if numeropattern = 156 then PtnBaseAU = (C < opend0 * 0.985);
